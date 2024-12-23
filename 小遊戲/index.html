@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>淡江大學校園小測驗</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdf5e6;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #ff7f50;
+        }
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+        }
+        .question {
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+        }
+        .options input {
+            margin-right: 10px;
+        }
+        .next-btn, .submit-btn {
+            background-color: #ff7f50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .next-btn:hover, .submit-btn:hover {
+            background-color: #ff6347;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .error-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>淡江大學校園小測驗</h1>
+    <div class="quiz-container">
+        <div id="question-container"></div>
+        <button class="next-btn" onclick="nextQuestion()">下一題</button>
+        <div id="result" class="result" style="display: none;"></div>
+        <div id="error-list" class="error-list" style="display: none;"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            { question: "淡江大學的創校年份是？", options: ["1950年", "1960年", "1970年", "1980年"], answer: "1950年" },
+            { question: "以下哪一個是淡江大學的校訓？", options: ["誠正勤樸", "樸實剛毅", "博學篤行", "自強不息"], answer: "樸實剛毅" },
+            { question: "淡江大學位於哪個城市？", options: ["台北市", "新北市", "台中市", "高雄市"], answer: "新北市" },
+            { question: "淡江大學的英文名稱是？", options: ["Tamkang University", "Tunghai University", "Tatung University", "Tainan University"], answer: "Tamkang University" },
+            { question: "淡江大學的覺生紀念圖書館位於哪個區域？", options: ["文錙大道", "學生活動中心", "五虎崗", "驚聲紀念大樓"], answer: "文錙大道" },
+            { question: "淡江大學的圖書館名稱是？", options: ["覺生紀念圖書館", "文錙藝術中心", "海事博物館", "黑天鵝展示廳"], answer: "覺生紀念圖書館" },
+            { question: "淡江大學的體育館名稱是？", options: ["體育館", "游泳館", "活動中心", "五虎崗綜合球場"], answer: "體育館" },
+            { question: "淡江大學的海事博物館位於什麼處室旁邊？", options: ["黑天鵝展示廳", "宮燈教室", "保健室", "文館"], answer: "保健室" },
+            { question: "淡江大學的宮燈教室以什麼聞名？", options: ["現代化設備", "傳統宮燈裝飾", "大型講堂", "藝術展覽"], answer: "傳統宮燈裝飾" },
+            { question: "淡江大學的書卷廣場主要用於？", options: ["舉辦活動", "學生自習", "運動鍛鍊", "藝術展覽"], answer: "舉辦活動" },
+            { question: "淡江大學的黑天鵝展示廳較靠近哪棟建築？", options: ["商館", "外語學院", "圖書館", "化學館"], answer: "商館" },
+            { question: "淡江大學的體育館提供以下哪項設施？", options: ["游泳池", "籃球場", "健身房", "以上皆是"], answer: "以上皆是" },
+            { question: "淡江大學的五虎崗綜合球場提供以下哪項運動場地？", options: ["足球場", "網球場", "棒球場", "以上皆非"], answer: "以上皆非" },
+            { question: "淡江大學的活動中心主要用於？", options: ["學生社團活動", "學術研討會", "體育比賽", "校史展覽"], answer: "學生社團活動" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let incorrectQuestions = [];
+
+        const questionContainer = document.getElementById("question-container");
+        const resultDiv = document.getElementById("result");
+        const errorListDiv = document.getElementById("error-list");
+
+        function loadQuestion() {
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionContainer.innerHTML = `
+                <div class="question">${currentQuestionIndex + 1}. ${currentQuestion.question}</div>
+                <ul class="options">
+                    ${currentQuestion.options.map(option => `
+                        <li>
+                            <label>
+                                <input type="radio" name="answer" value="${option}">
+                                ${option}
+                            </label>
+                        </li>
+                    `).join("")}
+                </ul>
+            `;
+        }
+
+        function nextQuestion() {
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (!selectedOption) {
+                alert("請選擇一個答案！");
+                return;
+            }
+            const userAnswer = selectedOption.value;
+            const currentQuestion = quizData[currentQuestionIndex];
+            if (userAnswer === currentQuestion.answer) {
+                score++;
+            } else {
+                incorrectQuestions.push({
+                    question: currentQuestion.question,
+                    correctAnswer: currentQuestion.answer
+                });
+            }
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            questionContainer.style.display = "none";
+            document.querySelector(".next-btn").style.display = "none";
+            resultDiv.style.display = "block";
+            resultDiv.innerHTML = `測驗結束！你的得分是：${score}/${quizData.length}`;
+
+            if (incorrectQuestions.length > 0) {
+                errorListDiv.style.display = "block";
+                errorListDiv.innerHTML = `
+                    <h2>錯誤題目與正確答案：</h2>
+                    <ul>
+                        ${incorrectQuestions.map(item => `
+                            <li><strong>${item.question}</strong><br>正確答案：${item.correctAnswer}</li>
+                        `).join("")}
+                    </ul>
+                `;
+            }
+        }
+
+        // 初始化載入第一題
+        loadQuestion();
+    </script>
+</body>
+</html>
